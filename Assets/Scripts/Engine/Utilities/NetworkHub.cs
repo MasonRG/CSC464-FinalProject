@@ -96,6 +96,27 @@ namespace Engine.Utilities
 		}
 
 		/// <summary>
+		/// Find all NetworkBehaviors out of the list of networkObjects.
+		/// Provide a predicate function that will only allow the behaviours to be selected if the predicate evaluates to true when passed
+		/// the networkObject we are considering. Leave the predicate null to just accept all matching behaviours.
+		/// </summary>
+		public static List<Tbehaviour> FindAllBehaviours<Tbehaviour>(Func<NetworkObject, bool> predicate = null) where Tbehaviour : NetworkBehavior
+		{
+			List<Tbehaviour> tList = new List<Tbehaviour>();
+
+			foreach (var obj in NetworkManager.Instance.Networker.NetworkObjectList)
+			{
+				if (predicate == null || predicate(obj))
+				{
+					Tbehaviour behaviour = obj.AttachedBehavior as Tbehaviour;
+					if (behaviour != null)
+						tList.Add(behaviour);
+				}
+			}
+			return tList;
+		}
+
+		/// <summary>
 		/// Returns our local Client.
 		/// </summary>
 		public static Client FindMyClient()

@@ -235,7 +235,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 170076733}
   m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
-  m_LocalPosition: {x: 0, y: 17.17, z: 0}
+  m_LocalPosition: {x: 0, y: 50, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -361,7 +361,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: -6
+  orthographic size: 6
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -384,7 +384,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 534669902}
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 3.5, y: 10.88, z: 0}
+  m_LocalPosition: {x: -3.5, y: 10, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -501,6 +501,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2134900670}
   - component: {fileID: 2134900671}
+  - component: {fileID: 2134900672}
   m_Layer: 0
   m_Name: GameController
   m_TagString: GameController
@@ -532,3 +533,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8ddc2ae69211a946972cf101afe3dc7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &2134900672
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2134900669}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0ce457d9e41cdb488de2e2904717982, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  circle: {fileID: 249980585}
+  edgeBorder: 1

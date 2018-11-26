@@ -4,10 +4,11 @@ using UnityEngine;
 
 namespace BeardedManStudios.Forge.Networking.Generated
 {
-	[GeneratedRPC("{\"types\":[]")]
-	[GeneratedRPCVariableNames("{\"types\":[]")]
+	[GeneratedRPC("{\"types\":[[\"uint\"]]")]
+	[GeneratedRPCVariableNames("{\"types\":[[\"sender\"]]")]
 	public abstract partial class ClientBehavior : NetworkBehavior
 	{
+		public const byte RPC_FINISHED_JOINING = 0 + 5;
 		
 		public ClientNetworkObject networkObject = null;
 
@@ -21,6 +22,7 @@ namespace BeardedManStudios.Forge.Networking.Generated
 			networkObject.AttachedBehavior = this;
 
 			base.SetupHelperRpcs(networkObject);
+			networkObject.RegisterRpc("FinishedJoining", FinishedJoining, typeof(uint));
 
 			networkObject.onDestroy += DestroyGameObject;
 
@@ -97,6 +99,11 @@ namespace BeardedManStudios.Forge.Networking.Generated
 			networkObject.SnapInterpolations();
 		}
 
+		/// <summary>
+		/// Arguments:
+		/// uint sender
+		/// </summary>
+		public abstract void FinishedJoining(RpcArgs args);
 
 		// DO NOT TOUCH, THIS GETS GENERATED PLEASE EXTEND THIS CLASS IF YOU WISH TO HAVE CUSTOM CODE ADDITIONS
 	}
