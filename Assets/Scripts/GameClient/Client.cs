@@ -29,7 +29,7 @@ namespace GameClient
 		{
 			get
 			{
-				return "Host-" + networkObject.Owner.NetworkId;
+				return "Host-" + Id;
 			}
 		}
 
@@ -37,7 +37,7 @@ namespace GameClient
 		{
 			get
 			{
-				return networkObject.Owner.NetworkId;
+				return networkObject.NetworkId - 3;
 			}
 		}
 
@@ -52,8 +52,12 @@ namespace GameClient
 				NetworkManager.Instance.Networker.disconnected += OnDisconnect;
 			}
 
+			
 
-			networkObject.SendRpc(RPC_FINISHED_JOINING, Receivers.All, Id);
+			if (networkObject.IsOwner)
+			{
+				networkObject.SendRpc(RPC_FINISHED_JOINING, Receivers.All, Id);
+			}
 		}
 
 
@@ -78,14 +82,9 @@ namespace GameClient
 		{
 			uint senderId = args.GetNext<uint>();
 
-			ClientSorter.SortClients();
-			if (senderId == NetworkHub.MyClient.Id)
-				nameText.SetText("<u>"+Name+ "</u>");
-			else
-				nameText.SetText(Name);
+			ClientSorter.NewClientJoined();
+
 		}
-
-
 
 		private void OnDisconnect(NetWorker sender)
 		{

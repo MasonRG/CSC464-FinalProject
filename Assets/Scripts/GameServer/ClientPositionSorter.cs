@@ -1,4 +1,5 @@
-﻿using Engine.Utilities;
+﻿using BeardedManStudios.Forge.Networking.Unity;
+using Engine.Utilities;
 using GameClient;
 using System.Collections;
 using System.Collections.Generic;
@@ -22,6 +23,32 @@ public class ClientPositionSorter : MonoBehaviour
 		radius = (scl.x / 2) - edgeBorder;
 	}
 
+	int netWaitCount = 0;
+	public void NewClientJoined()
+	{
+		var clients = NetworkHub.FindAllBehaviours<Client>();
+		foreach (var client in clients)
+		{
+			if (!client.networkObject.NetworkReady)
+			{
+				client.networkStarted += Client_networkStarted;
+				netWaitCount++;
+			}
+		}
+
+		if (netWaitCount == 0)
+			SortClients();
+	}
+
+	private void Client_networkStarted(NetworkBehavior behavior)
+	{
+		var client = behavior as Client;
+		client.networkStarted -= Client_networkStarted;
+		netWaitCount--;
+
+		if (netWaitCount == 0)
+			SortClients();
+	}
 
 	/// <summary>
 	/// Takes all clients in the server and places them around the circumference of the circle.
@@ -36,6 +63,12 @@ public class ClientPositionSorter : MonoBehaviour
 		for(int i = 0; i < clients.Count; i++)
 		{
 			clients[i].transform.position = Quaternion.AngleAxis(angle * i, Vector3.up) * Vector3.forward * radius;
+			if (clients[i].Id == NetworkHub.MyClient.Id)
+				clients[i].nameText.SetText("<u>" + clients[i].Name + "</u>");
+			else
+				clients[i].nameText.SetText(clients[i].Name);
 		}
 	}
+
+	
 }

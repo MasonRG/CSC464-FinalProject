@@ -25,13 +25,18 @@ namespace GameClient
 				NetworkManager.Instance.Networker.playerAccepted += OnConnectionEvent_ClientConnected;
 				NetworkManager.Instance.Networker.playerDisconnected += OnConnectionEvent_ClientDisconnect;
 
-				OnClientCreated(myClient.networkObject);
+				myClient.networkStarted += ServerClientStarted;
 			}
 
 			
 		}
 
-		
+		private void ServerClientStarted(NetworkBehavior behavior)
+		{
+			var client = behavior as Client;
+			client.networkStarted -= ServerClientStarted;
+			OnClientCreated(client.networkObject);
+		}
 
 		public void SendServerMessage(MessageEvent gameEvent, Client client, string message = "")
 		{
@@ -59,9 +64,12 @@ namespace GameClient
 		private void OnClientCreated(NetworkObject networkObject)
 		{
 			networkObject.Networker.objectCreated -= OnClientCreated;
+
 			NetworkHub.TryUntilTrueOrTimeout
 				(
-					() => { return networkObject.AttachedBehavior as Client != null; },
+					() => {
+						var client = networkObject.AttachedBehavior as Client;
+						return client != null && client.networkObject.NetworkReady; },
 					() => { SendServerMessage(MessageEvent.ClientJoined, networkObject.AttachedBehavior as Client); },
 					() => { Debug.Log("Couldn't find Client!"); }
 				);

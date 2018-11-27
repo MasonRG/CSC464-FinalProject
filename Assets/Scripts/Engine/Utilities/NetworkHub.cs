@@ -50,6 +50,14 @@ namespace Engine.Utilities
 			}
 		}
 
+		public static uint MyClientID
+		{
+			get
+			{
+				return MyClient.Id;
+			}
+		}
+
 		public static NetworkingPlayer MyNetworkingPlayer
 		{
 			get
@@ -58,13 +66,7 @@ namespace Engine.Utilities
 			}
 		}
 
-		public static uint MyPlayerID
-		{
-			get
-			{
-				return MyNetworkingPlayer.NetworkId;
-			}
-		}
+
 
 		public static bool MessageConsoleActive
 		{

@@ -107,7 +107,7 @@ namespace GameConsole
 				(
 					MessageEvent.ClientMessage,
 					NetworkHub.MyClient.Name,
-					NetworkHub.MyPlayerID,
+					NetworkHub.MyClientID,
 					message
 				);
 
@@ -142,7 +142,7 @@ namespace GameConsole
 			string message = args.GetNext<string>();
 			MessageEvent messageEvent = ConsoleUtils.ByteToChatEvent(args.GetNext<byte>());
 			uint senderID = args.GetNext<uint>();
-			bool isFromMe = NetworkHub.MyPlayerID == senderID;
+			bool isFromMe = NetworkHub.MyClientID == senderID;
 
 			if (ConsoleUtils.IsServerEvent(messageEvent))
 			{
