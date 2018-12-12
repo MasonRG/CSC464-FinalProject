@@ -2,10 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-using System.Threading;
-using MeshGeneration.TerrainChunks;
-using MeshGeneration.Generators;
-using MeshGeneration.Data;
 
 namespace MeshGeneration
 {
@@ -24,7 +20,7 @@ namespace MeshGeneration
 
 		public const int mapChunkSize = 254;
 
-		public enum DrawMode { NoiseMap, ColorMap, Mesh }
+		public enum DrawMode { NoiseMap, Mesh }
 
 		[Header("Mesh Generation Settings")]
 		public DrawMode drawMode;
@@ -36,72 +32,58 @@ namespace MeshGeneration
 		public float meshScale = 0.05f;
 		public Material meshMaterial;
 		[Space()]
-		public MapDataSettings mapSettings;
-		public TerrainType[] regions;
-
-
-		private ChunkedTerrainManager chunkedTerrain = new ChunkedTerrainManager();
+		public NoiseSettings noiseSettings;
 
 		public int NumChunks { get { return numChunksSqrt * numChunksSqrt; } }
 
-		private void Start()
-		{
-		//	chunkedTerrain.OnChunkRequested += OnChunkRequested;
-			chunkedTerrain.OnChunkCreated += OnChunkCreated;
+		private ChunkedTerrainManager chunkManager = new ChunkedTerrainManager();
+		public ChunkedTerrainManager ChunkManager { get { return chunkManager; } }
+		public Transform ChunkContainer { get { return chunkManager.ChunkContainer; } }
 
-			chunkedTerrain.GenerateAllChunks(numChunksSqrt);
-			//chunkedTerrain.GenerateChunkRange(numChunksSqrt, 0, 12);
+
+		public delegate void ChunkEventHandler(List<ChunkData> generatedChunks);
+		public event ChunkEventHandler OnChunksGenerated;
+		public void FireChunksGenerated(List<ChunkData> generatedChunks) { if (OnChunksGenerated != null) OnChunksGenerated(generatedChunks); }
+
+
+		public void GenerateMapChunkBatch(int start, int end)
+		{
+			start = Mathf.Clamp(start, 0, NumChunks);
+			end = Mathf.Clamp(end, 0, NumChunks);
+			if (start > end)
+			{
+				var tmp = end;
+				end = start;
+				start = tmp;
+			}
+			ChunkManager.GenerateChunkDataForRange(numChunksSqrt, start, end);
 		}
 
-
-		private void OnChunkRequested(TerrainChunk chunk)
-		{
-			Debug.Log(string.Format("Chunk ({0},{1}) Requested.", chunk.coord.x, chunk.coord.y));
-		}
-
-		private void OnChunkCreated(TerrainChunk chunk)
-		{
-			Debug.Log(string.Format("Chunk ({0},{1}) Created.", chunk.coord.x, chunk.coord.y));
-		}
-
-		
 
 		public void DrawMapInEditor()
 		{
-			MapData mapData = MapDataGenerator.GenerateMapData(mapChunkSize, mapChunkSize, mapSettings, regions, Vector2.zero);
+			HeightMapData mapData = HeightMapGenerator.GenerateHeightMapData(mapChunkSize, mapChunkSize, noiseSettings, Vector2.zero);
 
 			MapDisplay display = FindObjectOfType<MapDisplay>();
 			if (drawMode == DrawMode.NoiseMap)
 			{
 				display.DrawTexture(TextureGenerator.TextureFromHeightMap(mapData.heightMap));
 			}
-			else if (drawMode == DrawMode.ColorMap)
-			{
-				display.DrawTexture(TextureGenerator.TextureFromColorMap(mapData.colorMap, mapChunkSize, mapChunkSize));
-			}
 			else if (drawMode == DrawMode.Mesh)
 			{
-				display.DrawMesh(MeshGenerator.GenerateTerrainMesh(mapData.heightMap), TextureGenerator.TextureFromColorMap(mapData.colorMap, mapChunkSize, mapChunkSize));
+				display.DrawMesh(
+					MeshGenerator.GenerateTerrainMeshFromHeightMap(mapData.heightMap),
+					TextureGenerator.TextureFromHeightMap(mapData.heightMap));
 			}
+			
 		}
 
 		private void OnValidate()
 		{
-			mapSettings.ValidateValues();
+			noiseSettings.ValidateValues();
 		}
 
 
 		
 	}
-
-
-	[System.Serializable]
-	public struct TerrainType
-	{
-		public string name;
-		public float height;
-		public Color color;
-	}
-
-	
 }

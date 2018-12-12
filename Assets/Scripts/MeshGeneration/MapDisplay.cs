@@ -1,24 +1,26 @@
-﻿using MeshGeneration;
-using MeshGeneration.Data;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MapDisplay : MonoBehaviour
+namespace MeshGeneration
 {
-	public Renderer textureRenderer;
-	public MeshFilter meshFilter;
-	public MeshRenderer meshRenderer;
-
-	public void DrawTexture(Texture2D texture)
+	public class MapDisplay : MonoBehaviour
 	{
-		textureRenderer.sharedMaterial.mainTexture = texture;
-		textureRenderer.transform.localScale = new Vector3(texture.width, 1f, texture.height);
-	}
+		public Renderer textureRenderer;
+		public MeshFilter meshFilter;
+		public MeshRenderer meshRenderer;
 
-	public void DrawMesh(MeshData meshData, Texture2D texture)
-	{
-		meshFilter.sharedMesh = meshData.CreateMesh();
-		meshRenderer.sharedMaterial.mainTexture = texture;
+		public void DrawTexture(Texture2D texture)
+		{
+			textureRenderer.sharedMaterial.mainTexture = texture;
+			textureRenderer.transform.localScale = new Vector3(texture.width, 1f, texture.height);
+		}
+		
+		public void DrawMesh(MeshData meshData, Texture2D texture)
+		{
+			meshFilter.sharedMesh = meshData.CreateMesh();
+		//	meshRenderer.sharedMaterial.mainTexture = texture;
+		}
+		
 	}
 }
