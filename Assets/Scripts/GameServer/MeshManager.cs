@@ -23,6 +23,16 @@ public class MeshManager : MonoBehaviour
 		MapGenerator.Instance.OnChunksGenerated += OnChunkDataGenerated;
 	}
 
+	public HashSet<int> GetAllChunkIds()
+	{
+		HashSet<int> set = new HashSet<int>();
+		for(int i = 0; i < MapGenerator.Instance.NumChunks; i++)
+		{
+			set.Add(i);
+		}
+		return set;
+	}
+
 	public Pair<int,int>[] GetChunkRanges(int numClients)
 	{
 		int chunksPerClient = MapGenerator.Instance.NumChunks / numClients;
@@ -104,12 +114,12 @@ public class MeshManager : MonoBehaviour
 		List<SerializedChunk> serializedChunks = new List<SerializedChunk>();
 		foreach(var c in chunks)
 		{
-			serializedChunks.Add(new SerializedChunk(c));
+		//	serializedChunks.Add(new SerializedChunk(c));
 		}
 		chunks.Clear();
 		foreach (var sc in serializedChunks)
 		{
-			chunks.Add(sc.Deserialize());
+		//	chunks.Add(sc.Deserialize());
 		}
 		serializedChunks.Clear();
 

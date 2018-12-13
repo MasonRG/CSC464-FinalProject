@@ -58,6 +58,12 @@ namespace Engine.Utilities
 			}
 		}
 
+		public static uint LeaderID
+		{
+			get;
+			set;
+		}
+
 		public static NetworkingPlayer MyNetworkingPlayer
 		{
 			get

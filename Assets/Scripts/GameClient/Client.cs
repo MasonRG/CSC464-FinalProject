@@ -89,8 +89,7 @@ namespace GameClient
 		//RPC
 		public override void FinishedJoining(RpcArgs args)
 		{
-			uint senderId = args.GetNext<uint>();
-
+			//uint senderId = args.GetNext<uint>();
 			ClientSorter.NewClientJoined();
 
 		}
@@ -119,22 +118,22 @@ namespace GameClient
 			var serializedChunks = MeshManager.Instance.SerializeChunks(chunks);
 			foreach(var sc in serializedChunks)
 			{
-				networkObject.SendRpc(RPC_DELIVER_CHUNK, Receivers.Others, sc.coord, sc.vertices, sc.triangles, Id);
+				networkObject.SendRpc(RPC_DELIVER_CHUNK, Receivers.All, sc.coord, sc.heightMap, Id);
 			}
 
 			//add to our own chunk display
-			MeshManager.Instance.AddChunks(chunks, Id);
+			//MeshManager.Instance.AddChunks(chunks, Id);
 		}
 
 		public override void DeliverChunk(RpcArgs args)
 		{
 			byte[] coordBytes = args.GetNext<byte[]>();
-			byte[] verticesBytes = args.GetNext<byte[]>();
-			byte[] trianglesBytes = args.GetNext<byte[]>();
+			byte[] heightMapBytes = args.GetNext<byte[]>();
 			uint senderId = args.GetNext<uint>();
 
-			SerializedChunk serializedChunk = new SerializedChunk(coordBytes, verticesBytes, trianglesBytes);
-			MeshManager.Instance.AddChunk(serializedChunk.Deserialize(), senderId);
+			SerializedChunk serializedChunk = new SerializedChunk(coordBytes, heightMapBytes);
+			ChunkData chunk = serializedChunk.Deserialize();
+			MeshManager.Instance.AddChunk(chunk, senderId);
 		}
 
 

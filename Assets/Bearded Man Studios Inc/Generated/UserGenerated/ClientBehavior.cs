@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace BeardedManStudios.Forge.Networking.Generated
 {
-	[GeneratedRPC("{\"types\":[[\"uint\"][\"int\", \"int\", \"uint\"][\"byte[]\", \"byte[]\", \"byte[]\", \"uint\"]]")]
-	[GeneratedRPCVariableNames("{\"types\":[[\"sender\"][\"start\", \"end\", \"byId\"][\"coord\", \"vertices\", \"triangles\", \"senderId\"]]")]
+	[GeneratedRPC("{\"types\":[[\"uint\"][\"int\", \"int\", \"uint\"][\"byte[]\", \"byte[]\", \"uint\"]]")]
+	[GeneratedRPCVariableNames("{\"types\":[[\"sender\"][\"start\", \"end\", \"byId\"][\"coord\", \"heightmap\", \"senderId\"]]")]
 	public abstract partial class ClientBehavior : NetworkBehavior
 	{
 		public const byte RPC_FINISHED_JOINING = 0 + 5;
@@ -26,7 +26,7 @@ namespace BeardedManStudios.Forge.Networking.Generated
 			base.SetupHelperRpcs(networkObject);
 			networkObject.RegisterRpc("FinishedJoining", FinishedJoining, typeof(uint));
 			networkObject.RegisterRpc("RequestChunks", RequestChunks, typeof(int), typeof(int), typeof(uint));
-			networkObject.RegisterRpc("DeliverChunk", DeliverChunk, typeof(byte[]), typeof(byte[]), typeof(byte[]), typeof(uint));
+			networkObject.RegisterRpc("DeliverChunk", DeliverChunk, typeof(byte[]), typeof(byte[]), typeof(uint));
 
 			networkObject.onDestroy += DestroyGameObject;
 
@@ -118,8 +118,7 @@ namespace BeardedManStudios.Forge.Networking.Generated
 		/// <summary>
 		/// Arguments:
 		/// byte[] coord
-		/// byte[] vertices
-		/// byte[] triangles
+		/// byte[] heightmap
 		/// uint senderId
 		/// </summary>
 		public abstract void DeliverChunk(RpcArgs args);

@@ -30,6 +30,9 @@ namespace GameClient
 
 		void Update()
 		{
+			if (!networkObject.IsServer)
+				return;
+
 			if (Input.GetKeyDown(KeyCode.Alpha1))
 			{
 				StartDistributedGeneration();
@@ -52,6 +55,7 @@ namespace GameClient
 				NetworkHub.GameConsole.BroadcastServerMessage(gameEvent, message: message);
 		}
 
+		
 
 		public void StartDistributedGeneration()
 		{
@@ -63,6 +67,7 @@ namespace GameClient
 				clients[i].SendChunksRequest(chunkRanges[i].first, chunkRanges[i].second);
 			}
 		}
+
 
 
 		protected void OnConnectionEvent_ClientConnected(NetworkingPlayer player, NetWorker sender)

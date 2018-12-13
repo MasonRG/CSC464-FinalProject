@@ -18,7 +18,7 @@ namespace MeshGeneration
 			}
 		}
 
-		public const int mapChunkSize = 254;
+		public const int mapChunkSize = 64;
 
 		public enum DrawMode { NoiseMap, Mesh }
 
@@ -29,7 +29,7 @@ namespace MeshGeneration
 		public bool useMultiThreading = true;
 		public int numChunksSqrt;
 		[Space()]
-		public float meshScale = 0.05f;
+		public float meshScale = 0.2f;
 		public Material meshMaterial;
 		[Space()]
 		public NoiseSettings noiseSettings;

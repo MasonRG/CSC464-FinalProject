@@ -7,117 +7,31 @@ namespace Engine
 	public struct SerializedChunk
 	{
 		public readonly byte[] coord;
-		public readonly byte[] vertices;
-		public readonly byte[] triangles;
+		public readonly byte[] heightMap;
 
 		public SerializedChunk(ChunkData data)
 		{
 			coord = ByteSerializer.Vector2IntToBytes(data.coord);
-			vertices = ByteSerializer.Vector3ArrayToBytes(data.vertices);
-			triangles = ByteSerializer.IntArrayToBytes(data.triangles);
+			heightMap = ByteSerializer.HeightMapToBytes(data.heightMap.heightMap);
 		}
 
-		public SerializedChunk(byte[] coord, byte[] vertices, byte[] triangles)
+		public SerializedChunk(byte[] coord, byte[] heightMap)
 		{
 			this.coord = coord;
-			this.vertices = vertices;
-			this.triangles = triangles;
+			this.heightMap = heightMap;
 		}
 
 		public ChunkData Deserialize()
 		{
 			Vector2Int c = ByteSerializer.BytesToVector2Int(coord);
-			Vector3[] v = ByteSerializer.BytesToVector3Array(vertices);
-			int[] t = ByteSerializer.BytesToIntArray(triangles);
-			return new ChunkData(c, v, t);
+			float[,] h = ByteSerializer.BytesToHeightMap(heightMap);
+			return new ChunkData(c, h);
 		}
 	}
 
 	public static class ByteSerializer
 	{
-		//we want to use 16-bit vals for the vector3 (so 48bit per V3; rather than 96bit), so we can only scale up 100 or we will exceed short max value
-		public const int SCALE_FACTOR = 100; 
-
-		public static byte[] Vector3ArrayToBytes(Vector3[] vs)
-		{
-			int size = sizeof(short) * 3;
-
-			byte[] vals = new byte[vs.Length * size];
-			for (int i = 0; i < vs.Length; i++)
-			{
-				
-				var shX = (short)(vs[i].x * SCALE_FACTOR);
-				var shY = (short)(vs[i].y * SCALE_FACTOR);
-				var shZ = (short)(vs[i].z * SCALE_FACTOR);
-
-				var x = BitConverter.GetBytes(shX);
-				var y = BitConverter.GetBytes(shY);
-				var z = BitConverter.GetBytes(shZ);
-
-				var index = i * size;
-				vals[index + 0] = x[0];
-				vals[index + 1] = x[1];
-				vals[index + 2] = y[0];
-				vals[index + 3] = y[1];
-				vals[index + 4] = z[0];
-				vals[index + 5] = z[1];
-			}
-
-			return vals;
-		}
-
-		public static Vector3[] BytesToVector3Array(byte[] bytes)
-		{
-			int size = sizeof(short) * 3;
-
-			Vector3[] vals = new Vector3[bytes.Length / size];
-			for(int i = 0; i < vals.Length; i++)
-			{
-				var index = i * size;
-
-				var shX = BitConverter.ToInt16(bytes, index + 0);
-				var shY = BitConverter.ToInt16(bytes, index + sizeof(short));
-				var shZ = BitConverter.ToInt16(bytes, index + sizeof(short)*2);
-
-				var flX = ((float)shX) / SCALE_FACTOR;
-				var flY = ((float)shY) / SCALE_FACTOR;
-				var flZ = ((float)shZ) / SCALE_FACTOR;
-
-				vals[i] = new Vector3(flX, flY, flZ);
-			}
-
-			return vals;
-		}
-
-		public static byte[] IntArrayToBytes(int[] ints)
-		{
-			int size = sizeof(int);
-			byte[] vals = new byte[ints.Length * size];
-			for(int i = 0; i < ints.Length; i++)
-			{
-				int index = i * size;
-				var intBytes = BitConverter.GetBytes(ints[i]);
-				vals[index + 0] = intBytes[0];
-				vals[index + 1] = intBytes[1];
-				vals[index + 2] = intBytes[2];
-				vals[index + 3] = intBytes[3];
-			}
-
-			return vals;
-		}
-
-		public static int[] BytesToIntArray(byte[] bytes)
-		{
-			int size = sizeof(int);
-			int[] vals = new int[bytes.Length / size];
-			for (int i = 0; i < vals.Length; i++)
-			{
-				int index = i * size;
-				vals[i] = BitConverter.ToInt32(bytes, index);
-			}
-
-			return vals;
-		}
+		public const int SCALE_FACTOR = 15; 
 
 		public static byte[] Vector2IntToBytes(Vector2Int vector)
 		{
@@ -143,6 +57,51 @@ namespace Engine
 			var y = BitConverter.ToInt32(bytes, 4);
 
 			return new Vector2Int(x, y);
+		}
+
+		public static byte[] HeightMapToBytes(float[,] heightMap)
+		{
+			//first lets just do a naive conversion
+
+			int size = sizeof(byte);
+
+			int width = heightMap.GetLength(0);
+			int height = heightMap.GetLength(1);
+
+			int index = 0;
+			byte[] vals = new byte[width * height * size];
+			for(int x = 0; x < width; x++)
+			{
+				for (int y = 0; y < height; y++)
+				{
+					var val = (byte)(heightMap[x, y] * SCALE_FACTOR);
+
+					vals[index] = val;
+					index++;
+				}
+			}
+
+			return vals;
+		}
+
+		public static float[,] BytesToHeightMap(byte[] bytes)
+		{
+			int size = sizeof(byte);
+
+			int sqrt = (int)Mathf.Sqrt(bytes.Length / size);
+			float[,] heightMap = new float[sqrt, sqrt];
+
+			int index = 0;
+			for (int x = 0; x < sqrt; x++)
+			{
+				for (int y = 0; y < sqrt; y++)
+				{
+					heightMap[x, y] = ((float)bytes[index]) / SCALE_FACTOR;
+					index += size;
+				}
+			}
+
+			return heightMap;
 		}
 
 	}

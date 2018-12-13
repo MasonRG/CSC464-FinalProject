@@ -7,11 +7,7 @@ namespace MeshGeneration
 	public class ChunkData
 	{
 		public readonly Vector2Int coord;
-		public Vector3[] vertices;
-		public int[] triangles;
-
-		public bool isReady = false;
-		private readonly Action<ChunkData> onReady;
+		public readonly HeightMapData heightMap;
 
 		public Vector2 Position
 		{
@@ -28,30 +24,16 @@ namespace MeshGeneration
 			get { return Vector3.one * MapGenerator.Instance.meshScale; }
 		}
 
-		public ChunkData(Vector2Int coord, Vector3[] vertices, int[] triangles)
+		public ChunkData(Vector2Int coord)
 		{
 			this.coord = coord;
-			this.vertices = vertices;
-			this.triangles = triangles;
+			heightMap = HeightMapGenerator.GenerateHeightMapData(MapGenerator.mapChunkSize, MapGenerator.mapChunkSize, MapGenerator.Instance.noiseSettings, Position);
 		}
 
-		public ChunkData(Vector2Int coord, Action<ChunkData> onReady)
+		public ChunkData(Vector2Int coord, float[,] heightMap)
 		{
 			this.coord = coord;
-			this.onReady = onReady;
-
-			ChunkDataRequester.Instance.RequestChunkData(MapGenerator.Instance, Position, OnDataReceived);
-		}
-
-		private void OnDataReceived(MeshData meshData)
-		{
-			this.vertices = meshData.vertices;
-			this.triangles = meshData.triangles;
-
-			isReady = true;
-
-			if (onReady != null)
-				onReady(this);
+			this.heightMap = new HeightMapData(heightMap, 0f, 0f);
 		}
 	}
 
@@ -68,39 +50,21 @@ namespace MeshGeneration
 			}
 		}
 
-		private Dictionary<string, List<ChunkData>> chunkDict = new Dictionary<string, List<ChunkData>>();
-		private Dictionary<string, int> chunkCounts = new Dictionary<string, int>();
 
 		public void GenerateChunkDataForRange(int numChunksSqrt, int start, int end)
 		{
-			string key = start.ToString() + end.ToString();
-			if (chunkDict.ContainsKey(key)) return;
-
-			chunkDict.Add(key, new List<ChunkData>());
-			chunkCounts.Add(key, end - start);
+			List<ChunkData> chunks = new List<ChunkData>();
 
 			for (int i = start; i < end; i++)
 			{
 				int x = i / numChunksSqrt;
 				int y = i % numChunksSqrt;
 				Vector2Int chunkCoord = new Vector2Int(x, y);
-				var chunk = new ChunkData(chunkCoord, (data) => ChunkReady(key, data));
+				chunks.Add(new ChunkData(chunkCoord));
 			}
 
+			MapGenerator.Instance.FireChunksGenerated(chunks);
 		}
-
-		private void ChunkReady(string id, ChunkData data)
-		{
-			chunkDict[id].Add(data);
-			if (chunkDict[id].Count == chunkCounts[id])
-			{
-				var tmp = chunkDict[id];
-				chunkDict.Remove(id);
-				chunkCounts.Remove(id);
-				MapGenerator.Instance.FireChunksGenerated(tmp);
-			}
-		}
-
 
 		List<TerrainChunk> terrainChunks = new List<TerrainChunk>();
 		public void AddChunks(List<ChunkData> chunks, Color chunkColor)
@@ -137,7 +101,6 @@ namespace MeshGeneration
 
 			meshObject = new GameObject("Terrain Chunk (" + data.coord.x + "," + data.coord.y + ")");
 			meshFilter = meshObject.AddComponent<MeshFilter>();
-			meshFilter.mesh = MeshGenerator.GenerateTerrainMeshFromPrecomputed(data.vertices, data.triangles).CreateMesh();
 
 			meshRenderer = meshObject.AddComponent<MeshRenderer>();
 			meshRenderer.material = MapGenerator.Instance.meshMaterial;
@@ -145,6 +108,13 @@ namespace MeshGeneration
 			meshObject.transform.parent = MapGenerator.Instance.ChunkContainer;
 			meshObject.transform.localPosition = data.PositionV3;
 			meshObject.transform.localScale = data.Scale;
+
+			MeshDataRequester.Instance.RequestMeshData(MapGenerator.Instance, data, OnMeshGenerated);
+		}
+
+		void OnMeshGenerated(MeshData meshData)
+		{
+			meshFilter.mesh = meshData.CreateMesh();
 		}
 
 		public void Clear()
