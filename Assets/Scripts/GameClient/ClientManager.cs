@@ -12,8 +12,6 @@ namespace GameClient
 {
 	public class ClientManager : ClientManagerBehavior
 	{
-
-
 		protected override void NetworkStart()
 		{
 			base.NetworkStart();
@@ -27,9 +25,17 @@ namespace GameClient
 
 				myClient.networkStarted += ServerClientStarted;
 			}
-
-			
 		}
+
+
+		void Update()
+		{
+			if (Input.GetKeyDown(KeyCode.Alpha1))
+			{
+				StartDistributedGeneration();
+			}
+		}
+
 
 		private void ServerClientStarted(NetworkBehavior behavior)
 		{
@@ -47,8 +53,16 @@ namespace GameClient
 		}
 
 
+		public void StartDistributedGeneration()
+		{
+			var clients = NetworkHub.FindAllBehaviours<Client>();
 
-
+			var chunkRanges = MeshManager.Instance.GetChunkRanges(clients.Count);
+			for (int i = 0; i < clients.Count; i++)
+			{
+				clients[i].SendChunksRequest(chunkRanges[i].first, chunkRanges[i].second);
+			}
+		}
 
 
 		protected void OnConnectionEvent_ClientConnected(NetworkingPlayer player, NetWorker sender)

@@ -62,11 +62,16 @@ public class ClientPositionSorter : MonoBehaviour
 		var angle = 360f / clients.Count;
 		for(int i = 0; i < clients.Count; i++)
 		{
-			clients[i].transform.position = Quaternion.AngleAxis(angle * i, Vector3.up) * Vector3.forward * radius;
-			if (clients[i].Id == NetworkHub.MyClient.Id)
-				clients[i].nameText.SetText("<u>" + clients[i].Name + "</u>");
-			else
-				clients[i].nameText.SetText(clients[i].Name);
+			//set location
+			clients[i].transform.parent = circle.parent;
+			clients[i].transform.localPosition = Quaternion.AngleAxis(angle * i, Vector3.up) * Vector3.forward * radius;
+
+			//set name
+			if (clients[i].Id == NetworkHub.MyClient.Id) clients[i].nameText.SetText("<u>" + clients[i].Name + "</u>");
+			else clients[i].nameText.SetText(clients[i].Name);
+
+			//set color
+			clients[i].meshRenderer.material.color = clients[i].Color;
 		}
 	}
 

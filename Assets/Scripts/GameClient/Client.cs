@@ -6,6 +6,8 @@ using BeardedManStudios.Forge.Networking.Unity;
 using BeardedManStudios.Forge.Networking;
 using Engine.Utilities;
 using TMPro;
+using MeshGeneration;
+using Engine;
 
 namespace GameClient
 {
@@ -41,6 +43,13 @@ namespace GameClient
 			}
 		}
 
+		public Color Color
+		{
+			get
+			{
+				return ColorUtils.ColorById((int)Id);
+			}
+		}
 
 		protected override void NetworkStart()
 		{
@@ -86,6 +95,50 @@ namespace GameClient
 
 		}
 
+		public void SendChunksRequest(int start, int end)
+		{
+			networkObject.SendRpc(RPC_REQUEST_CHUNKS, Receivers.Owner, start, end, Id);
+		}
+
+		public override void RequestChunks(RpcArgs args)
+		{
+			int start = args.GetNext<int>();
+			int end = args.GetNext<int>();
+			uint id = args.GetNext<uint>();
+
+			//only generate if request is for us
+			if (Id == id)
+			{
+				MeshManager.Instance.GenerateChunks(start, end, OnChunksGenerated);
+			}
+		}
+
+		private void OnChunksGenerated(List<ChunkData> chunks)
+		{
+			//byte serialize the chunks and send them over the network
+			var serializedChunks = MeshManager.Instance.SerializeChunks(chunks);
+			foreach(var sc in serializedChunks)
+			{
+				networkObject.SendRpc(RPC_DELIVER_CHUNK, Receivers.Others, sc.coord, sc.vertices, sc.triangles, Id);
+			}
+
+			//add to our own chunk display
+			MeshManager.Instance.AddChunks(chunks, Id);
+		}
+
+		public override void DeliverChunk(RpcArgs args)
+		{
+			byte[] coordBytes = args.GetNext<byte[]>();
+			byte[] verticesBytes = args.GetNext<byte[]>();
+			byte[] trianglesBytes = args.GetNext<byte[]>();
+			uint senderId = args.GetNext<uint>();
+
+			SerializedChunk serializedChunk = new SerializedChunk(coordBytes, verticesBytes, trianglesBytes);
+			MeshManager.Instance.AddChunk(serializedChunk.Deserialize(), senderId);
+		}
+
+
+
 		private void OnDisconnect(NetWorker sender)
 		{
 			NetworkManager.Instance.Networker.disconnected -= OnDisconnect;
@@ -118,5 +171,7 @@ namespace GameClient
 				Destroy(NetworkManager.Instance.gameObject);
 			}
 		}
+
+		
 	}
 }

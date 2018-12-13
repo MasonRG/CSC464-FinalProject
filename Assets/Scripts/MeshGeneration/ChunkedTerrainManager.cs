@@ -103,17 +103,19 @@ namespace MeshGeneration
 
 
 		List<TerrainChunk> terrainChunks = new List<TerrainChunk>();
-		public void AddChunks(List<ChunkData> chunks)
+		public void AddChunks(List<ChunkData> chunks, Color chunkColor)
 		{
 			for(int i = 0; i < chunks.Count; i++)
 			{
-				AddChunk(chunks[i]);
+				AddChunk(chunks[i], chunkColor);
 			}
 		}
 
-		public void AddChunk(ChunkData chunkData)
+		public void AddChunk(ChunkData chunkData, Color chunkColor)
 		{
-			terrainChunks.Add(new TerrainChunk(chunkData));
+			var newChunk = new TerrainChunk(chunkData);
+			newChunk.Material.color = chunkColor;
+			terrainChunks.Add(newChunk);
 		}
 	}
 

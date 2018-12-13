@@ -17,6 +17,13 @@ namespace Engine
 			triangles = ByteSerializer.IntArrayToBytes(data.triangles);
 		}
 
+		public SerializedChunk(byte[] coord, byte[] vertices, byte[] triangles)
+		{
+			this.coord = coord;
+			this.vertices = vertices;
+			this.triangles = triangles;
+		}
+
 		public ChunkData Deserialize()
 		{
 			Vector2Int c = ByteSerializer.BytesToVector2Int(coord);
