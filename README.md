@@ -20,6 +20,8 @@ Currently does not handle non-responsive hosts or leaders.
 
 Video demonstrating current implementation [here](https://youtu.be/y7oAPoLOB94)
 
+Short demo [here](https://youtu.be/S4vvYJu0Mlc)
+
 #### Tools Used
 - The game engine used is the [Unity Engine](https://unity3d.com/) (version 2018.2.14).
 - The networking framework used is an open-source, C#/.NET solution called [Forge Networking Remastered](https://github.com/BeardedManStudios/ForgeNetworkingRemastered).
