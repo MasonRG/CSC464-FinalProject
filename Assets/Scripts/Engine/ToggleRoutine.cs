@@ -1,13 +1,10 @@
 ﻿using System.Collections;
 
-namespace AoTGameEngine.CustomTypes
+namespace Engine
 {
-	/// <summary>
-	/// You should give this class routines that run until manually stopped.
-	/// </summary>
 	public class ToggleRoutine
 	{
-		public bool IsRunning { get; private set; }
+		public bool IsRunning { get; set; }
 		private IEnumerator routine;
 
 		public ToggleRoutine(IEnumerator routine)

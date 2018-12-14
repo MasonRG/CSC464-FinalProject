@@ -7,11 +7,15 @@ using BeardedManStudios.Forge.Networking.Unity;
 using BeardedManStudios.Forge.Networking;
 using GameConsole;
 using Engine.Utilities;
+using Engine;
 
 namespace GameClient
 {
 	public class ClientManager : ClientManagerBehavior
 	{
+		float delayTime = 0.5f;
+		ToggleRoutine delayedGeneration;
+
 		protected override void NetworkStart()
 		{
 			base.NetworkStart();
@@ -27,18 +31,10 @@ namespace GameClient
 			}
 		}
 
-
-		void Update()
+		private void Start()
 		{
-			if (!networkObject.IsServer)
-				return;
-
-			if (Input.GetKeyDown(KeyCode.Alpha1))
-			{
-				StartDistributedGeneration();
-			}
+			delayedGeneration = new ToggleRoutine(DelayedGeneration());
 		}
-
 
 		private void ServerClientStarted(NetworkBehavior behavior)
 		{
@@ -55,7 +51,49 @@ namespace GameClient
 				NetworkHub.GameConsole.BroadcastServerMessage(gameEvent, message: message);
 		}
 
-		
+
+		public void StartGeneration(int delayTimeMs, int chunksPerLine)
+		{
+			if (delayedGeneration.IsRunning)
+				return;
+
+			//Ignore chunksPerLine option for now (they need to be synced with all clients
+			//if (chunksPerLine > 0)
+			//	MeshGeneration.MapGenerator.Instance.numChunksSqrt = chunksPerLine;
+
+			if (delayTime >= 0)
+			{
+				delayTime = ((float)delayTimeMs) / 1000;
+			}
+			
+
+			delayedGeneration.Start();
+		}
+
+		private IEnumerator DelayedGeneration()
+		{
+			var clients = NetworkHub.FindAllBehaviours<Client>();
+			var chunkRanges = MeshManager.Instance.GetChunkRanges(clients.Count);
+			var allChunks = MeshManager.Instance.GetAllChunkIds();
+
+			while (allChunks.Count > 0)
+			{
+				for (int i = 0; i < clients.Count; i++)
+				{
+					var range = chunkRanges[i];
+					if (range.first == range.second)
+						continue;
+
+					clients[i].SendChunksRequest(range.first, range.first + 1);
+					allChunks.Remove(range.first);
+					chunkRanges[i] = new Pair<int, int>(range.first + 1, range.second);
+				}
+
+				yield return new WaitForSeconds(delayTime);
+			}
+
+			delayedGeneration.IsRunning = false;
+		}
 
 		public void StartDistributedGeneration()
 		{

@@ -1,9 +1,12 @@
-﻿namespace GameConsole
+﻿using Engine.Utilities;
+using UnityEngine;
+
+namespace GameConsole
 {
 	public static class ConsoleCommandHandler
 	{
-		private const string cmd_startsim = "/begin ";
-		private const string cmd_placeholder = "/placeholder ";
+		private const string cmd_startsim = "/begin";
+		private const string cmd_placeholder = "/placeholder";
 
 		public static bool IsCommand(string message)
 		{
@@ -20,27 +23,36 @@
 			if (message.StartsWith(cmd_startsim))
 			{
 				command = MessageCommand.BeginSimulation;
-				parameter = message.Substring(cmd_startsim.Length);
+				parameter = message.Substring(cmd_startsim.Length).Trim();
 			}
 			//Placeholder
 			else if (message.StartsWith(cmd_placeholder))
 			{
 				command = MessageCommand.Placeholder;
-				parameter = message.Substring(cmd_placeholder.Length).ToLower();
+				parameter = message.Substring(cmd_placeholder.Trim().Length).ToLower();
 			}
 
 			return new ChatUserCommand(command, parameter);
 		}
 
 
-		public static void RunCommand(ChatUserCommand command, bool isFromMe)
+		public static void RunCommand(ChatUserCommand command)
 		{
-			if (!isFromMe)
-				return;
-
 			switch (command.Type)
 			{
 				case MessageCommand.BeginSimulation:
+					var parameters = string.IsNullOrEmpty(command.Parameter) ? new string[0] : command.Parameter.Split(' ');
+					try
+					{
+						int delayTimeMs = parameters.Length > 0 ? int.Parse(parameters[0]) : -1;
+						int chunksPerLine = parameters.Length > 1 ? int.Parse(parameters[1]) : -1;
+						NetworkHub.ClientManager.StartGeneration(delayTimeMs, chunksPerLine);
+					}
+					catch
+					{
+						Debug.Log("Error: " + command.Parameter);
+						return;
+					}
 					break;
 				case MessageCommand.Placeholder:
 					break;

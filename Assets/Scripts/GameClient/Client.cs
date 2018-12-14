@@ -15,6 +15,7 @@ namespace GameClient
 	{
 		public MeshRenderer meshRenderer;
 		public TextMeshProUGUI nameText;
+		public TextMeshProUGUI stateText;
 
 		private ClientPositionSorter clientSorter;
 		public ClientPositionSorter ClientSorter
@@ -24,6 +25,22 @@ namespace GameClient
 				if (clientSorter == null)
 					clientSorter = FindObjectOfType<ClientPositionSorter>();
 				return clientSorter;
+			}
+		}
+
+		public bool IsLeader
+		{
+			get
+			{
+				return Id == NetworkHub.LeaderID;
+			}
+		}
+
+		public string State
+		{
+			get
+			{
+				return IsLeader ? "Leader" : "";
 			}
 		}
 

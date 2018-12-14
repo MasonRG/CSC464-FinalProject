@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using Engine.Utilities;
+using System.Linq;
 
 namespace GameConsole
 {
@@ -98,18 +99,28 @@ namespace GameConsole
 		}
 
 
-		public static string FormatCommandMessage(string username, MessageCommand commandType, string commandParameter, bool isFromMe)
+		public static string FormatCommandMessage(string username, MessageCommand commandType, string commandParameter, bool isFromMe, bool iAmLeader)
 		{
+			if (NetworkHub.ClientIdFromName(username) != NetworkHub.LeaderID)
+			{
+				return "";
+			}
+
+			if (isFromMe && !iAmLeader)
+			{
+				return FormatForServer("Only the leader can issue commands.");
+			}
+
 			string returnVal = string.Empty;
 			string temp;
 			switch (commandType)
 			{
 				case MessageCommand.BeginSimulation:
-					temp = isFromMe ? string.Format("Name changed from '{0}' to '{1}'.", username, commandParameter) : string.Format("{0} has changed their name to {1}.", username, commandParameter);
+					temp = string.Format("Simulation started by '{0}' {2} with parameters: {1}", username, commandParameter, isFromMe ? "(you)" : "");
 					returnVal = FormatForServer(temp);
 					break;
 				case MessageCommand.Placeholder:
-					temp = isFromMe ? string.Format("Character changed to '{0}'.", commandParameter) : string.Format("{0} has changed their character to {1}", username, commandParameter);
+					temp = isFromMe ? string.Format("Placeholder command: '{0}'.", commandParameter) : string.Format("Placeholder command from {0}: {1}", username, commandParameter);
 					returnVal = FormatForServer(temp);
 					break;
 				default:

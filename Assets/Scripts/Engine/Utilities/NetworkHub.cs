@@ -72,7 +72,13 @@ namespace Engine.Utilities
 			}
 		}
 
-
+		public static uint ClientIdFromName(string name)
+		{
+			string sub = name.Substring(name.Length - 2, 2);
+			sub = sub.TrimStart('-');
+			uint id = uint.Parse(sub);
+			return id;
+		}
 
 		public static bool MessageConsoleActive
 		{

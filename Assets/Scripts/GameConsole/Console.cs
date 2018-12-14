@@ -143,6 +143,7 @@ namespace GameConsole
 			MessageEvent messageEvent = ConsoleUtils.ByteToChatEvent(args.GetNext<byte>());
 			uint senderID = args.GetNext<uint>();
 			bool isFromMe = NetworkHub.MyClientID == senderID;
+			bool iAmLeader = NetworkHub.MyClientID == NetworkHub.LeaderID;
 
 			if (ConsoleUtils.IsServerEvent(messageEvent))
 			{
@@ -165,10 +166,11 @@ namespace GameConsole
 					{
 						if (command.HasMessage)
 						{
-							PrintToChatBox(ConsoleMessageFormatter.FormatCommandMessage(username, command.Type, command.Parameter, isFromMe));
+							PrintToChatBox(ConsoleMessageFormatter.FormatCommandMessage(username, command.Type, command.Parameter, isFromMe, iAmLeader));
 						}
 
-						ConsoleCommandHandler.RunCommand(command, isFromMe);
+						if (isFromMe && iAmLeader)
+							ConsoleCommandHandler.RunCommand(command);
 					}
 				}
 				else

@@ -70,6 +70,9 @@ public class ClientPositionSorter : MonoBehaviour
 			if (clients[i].Id == NetworkHub.MyClient.Id) clients[i].nameText.SetText("<u>" + clients[i].Name + "</u>");
 			else clients[i].nameText.SetText(clients[i].Name);
 
+			//set state
+			clients[i].stateText.SetText(clients[i].State);
+
 			//set color
 			clients[i].meshRenderer.material.color = clients[i].Color;
 		}
