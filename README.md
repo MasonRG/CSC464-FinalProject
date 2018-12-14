@@ -13,13 +13,14 @@ With this in place, the next components to be implemented are:
 
 Getting Raft implemented is the main priority, and so I may forgo the mesh generation for a much simpler task just for demonstration to ensure that time is spent on the topic of most relevance to the course.
 
-#### Tools
-- The game engine used is the [Unity Engine](https://unity3d.com/) (version 2018.2.14).
-- The networking framework used is an open-source, C#/.NET solution called [Forge Networking Remastered](https://github.com/BeardedManStudios/ForgeNetworkingRemastered).
-
-### Update: Dec. 13
+#### Update: Dec. 13
 3D mesh generation complete. Generation is run on multiple threads (locally) and parallelized to be distibuted amongst multiple hosts.
 
 Currently does not handle non-responsive hosts or leaders.
 
 Video demonstrating current implementation [here](https://youtu.be/y7oAPoLOB94)
+
+#### Tools Used
+- The game engine used is the [Unity Engine](https://unity3d.com/) (version 2018.2.14).
+- The networking framework used is an open-source, C#/.NET solution called [Forge Networking Remastered](https://github.com/BeardedManStudios/ForgeNetworkingRemastered).
+- Mesh generation is adapted from the work of [Sebastian Lague](https://www.youtube.com/user/Cercopithecan).
