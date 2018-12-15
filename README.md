@@ -62,6 +62,11 @@ Considering the limitations of the network latency, this particular task does no
 
 If a task that produced much less data were to be considered, it might be much more feasible to use a distributed approach, as we could easily share the data between clients. If the computation required to generate the data was sufficiently complex, we could justify the network overhead as the task might be too resource-demanding for a single host to compute independently.
 
+#### Future Work
+This implementation is incomplete, as it cannot handle the loss of a leader. In the case of this application though, the leader is the server, so loss of the leader would present a larger issue of the server being non-responsive. This would require us to do a host migration before we could address the leadership election requirements of a Raft implementation. It would seem though that the result of the host migration could be considered an elected leader, and so it is probable that the new server host would function as the new leader.
+
+There is also no handling implemented for the event that a timed-out client returns and has missed chunk requests and also attempts to resume transmitting their own assigned chunks. This would need to be avoided and returning clients would need to be properly reintegrated into the system and able to obtain an up-to-date copy of the mesh.
+
 #### Source Code
 Code is located in the Assets/Scripts directory. 
 
