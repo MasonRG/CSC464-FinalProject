@@ -3,6 +3,7 @@ using Engine.Utilities;
 using MeshGeneration;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class MeshManager : MonoBehaviour
@@ -18,12 +19,26 @@ public class MeshManager : MonoBehaviour
 		}
 	}
 
+	HashSet<int> outstandingChunks;
+	Dictionary<int, uint> creationLog;
+	public HashSet<int> GetOutstandingChunksCopy()
+	{
+		return new HashSet<int>(outstandingChunks);
+	}
+
+	public bool HasChunkBeenGenerated(int chunkId)
+	{
+		return creationLog.ContainsKey(chunkId);
+	}
+
 	private void Start()
 	{
 		MapGenerator.Instance.OnChunksGenerated += OnChunkDataGenerated;
+		outstandingChunks = GetAllChunkIds();
+		creationLog = new Dictionary<int, uint>();
 	}
 
-	public HashSet<int> GetAllChunkIds()
+	private HashSet<int> GetAllChunkIds()
 	{
 		HashSet<int> set = new HashSet<int>();
 		for(int i = 0; i < MapGenerator.Instance.NumChunks; i++)
@@ -35,24 +50,28 @@ public class MeshManager : MonoBehaviour
 
 	public Pair<int,int>[] GetChunkRanges(int numClients)
 	{
-		int chunksPerClient = MapGenerator.Instance.NumChunks / numClients;
-		int chunksLeftOver = MapGenerator.Instance.NumChunks % numClients;
+		int chunksPerClient = outstandingChunks.Count / numClients;
+		int chunksLeftOver = outstandingChunks.Count % numClients;
 
-		int curr = 0;
-		int end = chunksPerClient;
+		var outstanding = outstandingChunks.ToList();
+		int index = 0;
 
 		Pair<int, int>[] pairs = new Pair<int, int>[numClients];
 		for(int i = 0; i < numClients; i++)
 		{
+			int add = chunksPerClient;
 			if (chunksLeftOver > 0)
 			{
-				end += 1;
+				add++;
 				chunksLeftOver--;
 			}
 
+			int curr = outstanding[index];
+		//	Debug.Log(string.Format("count: {0} | curr: {1} | add: {2}", outstandingChunks.Count, curr, add));
+			int end = outstanding[add-1];
+
 			pairs[i] = new Pair<int, int>(curr, end);
-			curr = end;
-			end += chunksPerClient;
+			index += add;
 		}
 
 		return pairs;
@@ -95,14 +114,16 @@ public class MeshManager : MonoBehaviour
 		return chunks;
 	}
 
-	public void AddChunks(List<ChunkData> chunks, uint creatorId)
-	{
-		MapGenerator.Instance.ChunkManager.AddChunks(chunks, ColorUtils.ColorById((int)creatorId));
-	}
-
 	public void AddChunk(ChunkData chunk, uint creatorId)
 	{
-		MapGenerator.Instance.ChunkManager.AddChunk(chunk, ColorUtils.ColorById((int)creatorId));
+		//only add this chunk if it is outstanding
+		//if added - remove from outstanding chunks
+		if (outstandingChunks.Contains(chunk.Id))
+		{
+			MapGenerator.Instance.ChunkManager.AddChunk(chunk, ColorUtils.ColorById((int)creatorId));
+			outstandingChunks.Remove(chunk.Id);
+			creationLog.Add(chunk.Id, creatorId);
+		}
 	}
 
 

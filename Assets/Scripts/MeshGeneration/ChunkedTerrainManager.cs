@@ -24,6 +24,11 @@ namespace MeshGeneration
 			get { return Vector3.one * MapGenerator.Instance.meshScale; }
 		}
 
+		public int Id
+		{
+			get { return coord.x * MapGenerator.Instance.numChunksSqrt + coord.y; }
+		}
+
 		public ChunkData(Vector2Int coord)
 		{
 			this.coord = coord;
@@ -99,7 +104,7 @@ namespace MeshGeneration
 		{
 			this.data = data;
 
-			meshObject = new GameObject("Terrain Chunk (" + data.coord.x + "," + data.coord.y + ")");
+			meshObject = new GameObject("Terrain Chunk [" + data.Id + "] (" + data.coord.x + "," + data.coord.y + ")");
 			meshFilter = meshObject.AddComponent<MeshFilter>();
 
 			meshRenderer = meshObject.AddComponent<MeshRenderer>();

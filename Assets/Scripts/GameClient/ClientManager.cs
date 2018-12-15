@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using BeardedManStudios.Forge.Networking.Generated;
 using GameServer;
@@ -7,14 +6,12 @@ using BeardedManStudios.Forge.Networking.Unity;
 using BeardedManStudios.Forge.Networking;
 using GameConsole;
 using Engine.Utilities;
-using Engine;
 
 namespace GameClient
 {
 	public class ClientManager : ClientManagerBehavior
 	{
-		float delayTime = 0.5f;
-		ToggleRoutine delayedGeneration;
+		LeaderOperator leader;
 
 		protected override void NetworkStart()
 		{
@@ -33,7 +30,7 @@ namespace GameClient
 
 		private void Start()
 		{
-			delayedGeneration = new ToggleRoutine(DelayedGeneration());
+			leader = new LeaderOperator();
 		}
 
 		private void ServerClientStarted(NetworkBehavior behavior)
@@ -54,59 +51,10 @@ namespace GameClient
 
 		public void StartGeneration(int delayTimeMs, int chunksPerLine)
 		{
-			if (delayedGeneration.IsRunning)
-				return;
-
-			//Ignore chunksPerLine option for now (they need to be synced with all clients
-			//if (chunksPerLine > 0)
-			//	MeshGeneration.MapGenerator.Instance.numChunksSqrt = chunksPerLine;
-
-			if (delayTime >= 0)
-			{
-				delayTime = ((float)delayTimeMs) / 1000;
-			}
-			
-
-			delayedGeneration.Start();
+			leader.StartGeneration(delayTimeMs, chunksPerLine);
 		}
 
-		private IEnumerator DelayedGeneration()
-		{
-			var clients = NetworkHub.FindAllBehaviours<Client>();
-			var chunkRanges = MeshManager.Instance.GetChunkRanges(clients.Count);
-			var allChunks = MeshManager.Instance.GetAllChunkIds();
-
-			while (allChunks.Count > 0)
-			{
-				for (int i = 0; i < clients.Count; i++)
-				{
-					var range = chunkRanges[i];
-					if (range.first == range.second)
-						continue;
-
-					clients[i].SendChunksRequest(range.first, range.first + 1);
-					allChunks.Remove(range.first);
-					chunkRanges[i] = new Pair<int, int>(range.first + 1, range.second);
-				}
-
-				yield return new WaitForSeconds(delayTime);
-			}
-
-			delayedGeneration.IsRunning = false;
-		}
-
-		public void StartDistributedGeneration()
-		{
-			var clients = NetworkHub.FindAllBehaviours<Client>();
-
-			var chunkRanges = MeshManager.Instance.GetChunkRanges(clients.Count);
-			for (int i = 0; i < clients.Count; i++)
-			{
-				clients[i].SendChunksRequest(chunkRanges[i].first, chunkRanges[i].second);
-			}
-		}
-
-
+		
 
 		protected void OnConnectionEvent_ClientConnected(NetworkingPlayer player, NetWorker sender)
 		{
